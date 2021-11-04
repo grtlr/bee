@@ -2,11 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::process::Command;
+use std::fs;
 
 #[derive(Debug)]
 enum BuildError {
     GitCommit,
     GitBranch,
+}
+
+// TODO: cleanup!
+fn fail_on_empty_directory(dir: &str) {
+    if fs::read_dir(dir).unwrap().count() == 0 {
+        println!(
+            "The `{}` directory is empty, did you forget to pull the submodules?",
+            dir
+        );
+        println!("Try `git submodule update --init --recursive`");
+        panic!();
+    }
 }
 
 fn main() -> Result<(), BuildError> {
@@ -32,6 +45,10 @@ fn main() -> Result<(), BuildError> {
             );
         }
         Err(_) => return Err(BuildError::GitBranch),
+    }
+
+    if cfg!(feature = "dashboard") {
+        fail_on_empty_directory("bee-node/src/plugins/dashboard/frontend");
     }
 
     Ok(())
