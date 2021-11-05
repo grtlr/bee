@@ -1,25 +1,13 @@
 // Copyright 2020-2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::process::Command;
 use std::fs;
+use std::process::Command;
 
 #[derive(Debug)]
 enum BuildError {
     GitCommit,
     GitBranch,
-}
-
-// TODO: cleanup!
-fn fail_on_empty_directory(dir: &str) {
-    if fs::read_dir(dir).unwrap().count() == 0 {
-        println!(
-            "The `{}` directory is empty, did you forget to pull the submodules?",
-            dir
-        );
-        println!("Try `git submodule update --init --recursive`");
-        panic!();
-    }
 }
 
 fn main() -> Result<(), BuildError> {
@@ -48,7 +36,26 @@ fn main() -> Result<(), BuildError> {
     }
 
     if cfg!(feature = "dashboard") {
-        fail_on_empty_directory("bee-node/src/plugins/dashboard/frontend");
+        // check out frontend submodule
+        let _ = Command::new("git")
+            .args(&["submodule", "update", "--init", "frontend"])
+            .status()
+            .expect("Couldn't check out dashboard submodule.");
+
+        let _ = Command::new("cd")
+            .args(&["src/plugins/dashboard/frontend"])
+            .status()
+            .expect("Couldn't switch to directory");
+
+        let _ = Command::new("npm")
+            .args(&["install"])
+            .status()
+            .expect("Couldn't install dashboard dependencies.");
+
+        let _ = Command::new("npm")
+            .args(&["run", "bee-build"])
+            .status()
+            .expect("Couldn't build dashboard.");
     }
 
     Ok(())
