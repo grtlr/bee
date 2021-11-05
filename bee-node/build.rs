@@ -1,7 +1,6 @@
 // Copyright 2020-2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-use std::fs;
 use std::process::Command;
 
 #[derive(Debug)]
@@ -37,25 +36,37 @@ fn main() -> Result<(), BuildError> {
 
     if cfg!(feature = "dashboard") {
         // check out frontend submodule
-        let _ = Command::new("git")
-            .args(&["submodule", "update", "--init", "frontend"])
+        if !Command::new("git")
+            .args(&["submodule", "update", "--init", "--recursive"])
             .status()
-            .expect("Couldn't check out dashboard submodule.");
+            .expect("Failed to run 'git submodule update'")
+            .success()
+        {
+            panic!();
+        }
 
-        let _ = Command::new("cd")
-            .args(&["src/plugins/dashboard/frontend"])
-            .status()
-            .expect("Couldn't switch to directory");
-
-        let _ = Command::new("npm")
+        let frontend_dir = "src/plugins/dashboard/frontend";
+        // install dependencies
+        if !Command::new("npm")
             .args(&["install"])
+            .current_dir(frontend_dir)
             .status()
-            .expect("Couldn't install dashboard dependencies.");
+            .expect("Failed to run 'npm install'")
+            .success()
+        {
+            panic!();
+        }
 
-        let _ = Command::new("npm")
-            .args(&["run", "bee-build"])
+        // bundle dashboard
+        if !Command::new("npm")
+            .args(&["run", "build-bee"])
+            .current_dir(frontend_dir)
             .status()
-            .expect("Couldn't build dashboard.");
+            .expect("Failed to run 'npm run build-bee'")
+            .success()
+        {
+            panic!();
+        }
     }
 
     Ok(())
