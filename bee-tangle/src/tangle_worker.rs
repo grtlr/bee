@@ -14,6 +14,7 @@ use std::{
     time::{Duration, Instant},
 };
 
+#[deprecated]
 /// A type representing a tangle node worker.
 pub struct TangleWorker;
 
