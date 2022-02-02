@@ -13,6 +13,8 @@ LABEL org.label-schema.vcs-url="https://github.com/iotaledger/bee"
 RUN apt-get update && \
     apt-get install cmake clang -y
 
+RUN if [ "$WITH_DASHBOARD" = true ] ; then apt-get install nodejs npm -y ; node -v ; fi
+
 WORKDIR /bee
 COPY . .
 

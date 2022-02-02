@@ -1,12 +1,16 @@
 // Copyright 2020-2021 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+use std::path::Path;
 use std::process::Command;
 
 #[derive(Debug)]
 enum BuildError {
     GitCommit,
     GitBranch,
+    GitSubmodule,
+    NpmInstall,
+    NpmBuild,
 }
 
 fn main() -> Result<(), BuildError> {
@@ -32,6 +36,26 @@ fn main() -> Result<(), BuildError> {
             );
         }
         Err(_) => return Err(BuildError::GitBranch),
+    }
+
+    #[cfg(feature = "dashboard")]
+    if !Path::new("./bee-node/src/plugins/dashboard/frontend/build").exists() {
+        Command::new("git")
+            .args(&["submodule", "update", "--init", "--recursive"])
+            .status()
+            .or(Err(BuildError::GitSubmodule))?;
+
+        Command::new("npm")
+            .args(&["install"])
+            .current_dir("./bee-node/src/plugins/dashboard/frontend/")
+            .status()
+            .or(Err(BuildError::NpmInstall))?;
+
+        Command::new("npm")
+            .args(&["run", "build-bee"])
+            .current_dir("./bee-node/src/plugins/dashboard/frontend/")
+            .status()
+            .or(Err(BuildError::NpmBuild))?;
     }
 
     Ok(())
