@@ -2,12 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use bee_message::{
-    byte_cost::{ByteCost, ByteCostConfig},
+    byte_cost::{min_deposit, ByteCost, ByteCostConfig},
     milestone::MilestoneIndex,
-    output::{Output, OutputId},
+    output::{
+        unlock_condition::{AddressUnlockCondition, DustDepositReturnUnlockCondition},
+        BasicOutput, BasicOutputBuilder, Output, OutputId,
+    },
     MessageId,
 };
-use bee_test::rand::output::{rand_alias_output, rand_basic_output, rand_foundry_output, rand_nft_output};
+use bee_test::rand::{
+    address::rand_alias_address,
+    output::{rand_alias_output, rand_basic_output, rand_foundry_output, rand_nft_output},
+};
 
 use std::mem::size_of;
 
@@ -38,4 +44,19 @@ fn valid_byte_cost_range() {
         (496 - OFFSET)..=(21_365 - OFFSET),
     );
     output_in_range(Output::Nft(rand_nft_output()), (436 - OFFSET)..=(21_734 - OFFSET));
+}
+
+#[test]
+fn basic_output() {
+    let output = BasicOutput::build(2_000_000)
+        .unwrap()
+        .add_unlock_condition(AddressUnlockCondition::new(rand_alias_address().into()).into())
+        .add_unlock_condition(
+            DustDepositReturnUnlockCondition::new(rand_alias_address().into(), 414)
+                .unwrap()
+                .into(),
+        )
+        .finish()
+        .unwrap();
+    assert_eq!(min_deposit(&CONFIG, &Output::Basic(output),), 414);
 }
