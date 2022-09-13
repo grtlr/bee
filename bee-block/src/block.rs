@@ -313,7 +313,29 @@ pub mod dto {
 #[allow(missing_docs)]
 pub mod inx {
     use super::*;
-    use crate::error::inx::InxError;
+    use crate::{error::inx::InxError, semantic};
+
+    impl From<semantic::ConflictReason> for inx_bindings::proto::block_metadata::ConflictReason {
+        fn from(value: semantic::ConflictReason) -> Self {
+            use semantic::ConflictReason;
+            match value {
+                ConflictReason::None => Self::None,
+                ConflictReason::InputUtxoAlreadySpent => Self::InputAlreadySpent,
+                ConflictReason::InputUtxoAlreadySpentInThisMilestone => Self::InputAlreadySpentInThisMilestone,
+                ConflictReason::InputUtxoNotFound => Self::InputNotFound,
+                ConflictReason::CreatedConsumedAmountMismatch => Self::InputOutputSumMismatch,
+                ConflictReason::InvalidSignature => Self::InvalidSignature,
+                ConflictReason::TimelockNotExpired => Self::TimelockNotExpired,
+                ConflictReason::InvalidNativeTokens => Self::InvalidNativeTokens,
+                ConflictReason::StorageDepositReturnUnfulfilled => Self::ReturnAmountNotFulfilled,
+                ConflictReason::InvalidUnlock => Self::InvalidInputUnlock,
+                ConflictReason::InputsCommitmentsMismatch => Self::InvalidInputsCommitment,
+                ConflictReason::UnverifiedSender => Self::InvalidSender,
+                ConflictReason::InvalidChainStateTransition => Self::InvalidChainStateTransition,
+                ConflictReason::SemanticValidationFailed => Self::SemanticValidationFailed,
+            }
+        }
+    }
 
     pub fn block_from_raw_block(
         value: inx_bindings::proto::RawBlock,
