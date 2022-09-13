@@ -79,14 +79,28 @@ mod test {
     use bee::rand::output::rand_output;
 
     use super::*;
+    use crate::ProtocolParameters;
 
     #[test]
     fn raw_output() {
-        let output = rand_output();
+        let protocol_parameters = bee::protocol::ProtocolParameters::default();
+
+        let output = rand_output(&protocol_parameters);
+
         let proto = proto::RawOutput {
             data: output.pack_to_vec(),
         };
         let raw: Raw<bee::output::Output> = proto.into();
-        assert_eq!(output, raw.inner(&()).unwrap());
+        assert_eq!(output, raw.inner(&protocol_parameters).unwrap());
+    }
+
+    #[test]
+    fn raw_protocol_parameters() {
+        let protocol_parameters = bee::protocol::ProtocolParameters::default();
+
+        let proto = proto::RawProtocolParameters::from(protocol_parameters.clone());
+
+        let pp: ProtocolParameters = proto.into();
+        assert_eq!(protocol_parameters, pp.params.inner(&()).unwrap());
     }
 }
