@@ -51,6 +51,40 @@ pub enum LedgerUpdate {
     End(Marker),
 }
 
+impl LedgerUpdate {
+    /// If present, returns the contained `LedgerSpent` while consuming `self`.
+    pub fn consumed(self) -> Option<LedgerSpent> {
+        match self {
+            Self::Consumed(ledger_spent) => Some(ledger_spent),
+            _ => None,
+        }
+    }
+
+    /// If present, returns the contained `LedgerOutput` while consuming `self`.
+    pub fn created(self) -> Option<LedgerOutput> {
+        match self {
+            Self::Created(ledger_output) => Some(ledger_output),
+            _ => None,
+        }
+    }
+
+    /// If present, returns the `Marker` that denotes the beginning of a milestone while consuming `self`.
+    pub fn begin(self) -> Option<Marker> {
+        match self {
+            Self::Begin(marker) => Some(marker),
+            _ => None,
+        }
+    }
+
+    /// If present, returns the `Marker` that denotes the end if present while consuming `self`.
+    pub fn end(self) -> Option<Marker> {
+        match self {
+            Self::End(marker) => Some(marker),
+            _ => None,
+        }
+    }
+}
+
 impl From<proto::ledger_update::Marker> for Marker {
     fn from(value: proto::ledger_update::Marker) -> Self {
         Self {

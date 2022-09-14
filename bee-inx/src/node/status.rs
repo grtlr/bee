@@ -11,10 +11,10 @@ use crate::{maybe_missing, Milestone, ProtocolParameters};
 pub struct NodeStatus {
     /// Signals if the node is healthy.
     pub is_healthy: bool,
-        /// Signals if the node is synced.
-        pub is_synced: bool,
-        /// Signals if the node is almost synced (within a configured range).
-        pub is_almost_synced: bool,
+    /// Signals if the node is synced.
+    pub is_synced: bool,
+    /// Signals if the node is almost synced (within a configured range).
+    pub is_almost_synced: bool,
     /// The latest milestone seen by the node.
     pub latest_milestone: Milestone,
     /// The last confirmed milestone.
