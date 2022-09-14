@@ -96,8 +96,7 @@ mod test {
 
     #[test]
     fn raw_protocol_parameters() {
-        let protocol_parameters = bee::protocol::ProtocolParameters::default();
-
+        let protocol_parameters = bee::protocol::protocol_parameters();
         let proto = proto::RawProtocolParameters::from(protocol_parameters.clone());
 
         let pp: ProtocolParameters = proto.into();
